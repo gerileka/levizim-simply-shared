@@ -1,6 +1,10 @@
 import { motion } from "framer-motion";
 import { Hero } from "@/components/Hero";
 import { RideCard } from "@/components/RideCard";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const featuredRides = [
   {
@@ -42,8 +46,25 @@ const featuredRides = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
+
   return (
     <div className="min-h-screen">
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={handleLogout}
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+      </div>
       <Hero />
       <section className="py-16 bg-gray-50">
         <div className="container px-4 md:px-6">
@@ -53,7 +74,9 @@ const Index = () => {
             transition={{ duration: 0.5 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold tracking-tighter mb-4">Featured Rides</h2>
+            <h2 className="text-3xl font-bold tracking-tighter mb-4">
+              Featured Rides
+            </h2>
             <p className="text-gray-500 max-w-[600px] mx-auto">
               Discover popular routes and trusted drivers in your area
             </p>
