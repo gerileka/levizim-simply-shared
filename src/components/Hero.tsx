@@ -5,20 +5,100 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Hero = () => {
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [date, setDate] = useState("");
+  const [price, setPrice] = useState("");
+  const [seats, setSeats] = useState("");
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Searching for ride:", { fromLocation, toLocation, date });
+    
+    try {
+      const { data, error } = await supabase
+        .from('rides')
+        .select('*, profiles(full_name, avatar_url, rating)')
+        .eq('from_location', fromLocation)
+        .eq('to_location', toLocation)
+        .eq('date', date)
+        .gt('seats', 0);
+
+      if (error) throw error;
+
+      console.log('Found rides:', data);
+      // Here you could navigate to a search results page or update state to show results
+      toast({
+        title: `Found ${data.length} rides`,
+        description: "Scroll down to see available rides",
+      });
+    } catch (error) {
+      console.error('Error searching rides:', error);
+      toast({
+        title: "Error searching rides",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleOffer = (e: React.FormEvent) => {
+  const handleOffer = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Offering ride:", { fromLocation, toLocation, date });
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to offer a ride",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('rides')
+        .insert([
+          {
+            driver_id: user.id,
+            from_location: fromLocation,
+            to_location: toLocation,
+            date,
+            price: parseFloat(price),
+            seats: parseInt(seats),
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Ride offered successfully",
+        description: "Your ride has been posted",
+      });
+
+      // Clear form
+      setFromLocation("");
+      setToLocation("");
+      setDate("");
+      setPrice("");
+      setSeats("");
+    } catch (error) {
+      console.error('Error offering ride:', error);
+      toast({
+        title: "Error offering ride",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -108,6 +188,7 @@ export const Hero = () => {
                           placeholder="Enter departure city"
                           value={fromLocation}
                           onChange={(e) => setFromLocation(e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
@@ -117,6 +198,7 @@ export const Hero = () => {
                           placeholder="Enter destination city"
                           value={toLocation}
                           onChange={(e) => setToLocation(e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
@@ -126,6 +208,31 @@ export const Hero = () => {
                           type="date"
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="price">Price</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          placeholder="Enter price"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="seats">Available Seats</Label>
+                        <Input
+                          id="seats"
+                          type="number"
+                          placeholder="Enter number of seats"
+                          value={seats}
+                          onChange={(e) => setSeats(e.target.value)}
+                          required
                         />
                       </div>
                     </div>
