@@ -4,7 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RideSearch } from "./RideSearch";
 import { RideOffer } from "./RideOffer";
 
-export const Hero = () => {
+interface HeroProps {
+  onSearchResults: (rides: any[]) => void;
+}
+
+export const Hero = ({ onSearchResults }: HeroProps) => {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-sage-50/50 to-white/95 -z-10" />
@@ -45,7 +49,7 @@ export const Hero = () => {
                 </TabsList>
 
                 <TabsContent value="search">
-                  <RideSearch />
+                  <RideSearch onSearchResults={onSearchResults} />
                 </TabsContent>
 
                 <TabsContent value="offer">

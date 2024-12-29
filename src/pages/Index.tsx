@@ -6,7 +6,6 @@ import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { RideSearch } from "@/components/RideSearch";
 
 interface Ride {
   id: string;
@@ -47,23 +46,15 @@ const Index = () => {
           Logout
         </Button>
       </div>
-      <Hero />
+      <Hero onSearchResults={handleSearchResults} />
       <section className="py-16 bg-gray-50">
         <div className="container px-4 md:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold tracking-tighter mb-4">
-              Find a Ride
-            </h2>
-            <RideSearch onSearchResults={handleSearchResults} />
-          </motion.div>
-
           {searchResults.length > 0 && (
-            <div className="mt-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <h3 className="text-2xl font-bold tracking-tighter mb-6">
                 Search Results
               </h3>
@@ -84,7 +75,7 @@ const Index = () => {
                   />
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
