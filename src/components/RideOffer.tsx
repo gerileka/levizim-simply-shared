@@ -44,15 +44,35 @@ export const RideOffer = () => {
         .from('profiles')
         .select('id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
         toast({
-          title: "Profile not found",
-          description: "Please try signing out and back in",
+          title: "Error fetching profile",
+          description: "Please try again later",
           variant: "destructive",
         });
         return;
+      }
+
+      if (!profile) {
+        // Create profile if it doesn't exist
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{ id: user.id }])
+          .select('id')
+          .single();
+
+        if (createError || !newProfile) {
+          toast({
+            title: "Error creating profile",
+            description: "Please try again later",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        profile = newProfile;
       }
 
       // Now create the ride using the profile ID
