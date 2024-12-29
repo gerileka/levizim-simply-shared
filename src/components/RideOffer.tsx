@@ -27,9 +27,10 @@ export const RideOffer = () => {
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // First get the user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      if (!user) {
+      if (userError || !user) {
         toast({
           title: "Authentication required",
           description: "Please sign in to offer a ride",
@@ -38,11 +39,28 @@ export const RideOffer = () => {
         return;
       }
 
+      // Then get their profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        toast({
+          title: "Profile not found",
+          description: "Please try signing out and back in",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Now create the ride using the profile ID
       const { data, error } = await supabase
         .from('rides')
         .insert([
           {
-            driver_id: user.id,
+            driver_id: profile.id,
             from_location: fromLocation,
             to_location: toLocation,
             date,
