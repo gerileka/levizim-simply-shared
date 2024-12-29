@@ -6,7 +6,11 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
-export const RideSearch = () => {
+interface RideSearchProps {
+  onSearchResults: (rides: any[]) => void;
+}
+
+export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [date, setDate] = useState("");
@@ -31,8 +35,10 @@ export const RideSearch = () => {
       if (error) throw error;
 
       console.log('Found rides:', data);
+      onSearchResults(data || []);
+      
       toast({
-        title: `Found ${data.length} rides`,
+        title: `Found ${data?.length || 0} rides`,
         description: "Scroll down to see available rides",
       });
     } catch (error) {

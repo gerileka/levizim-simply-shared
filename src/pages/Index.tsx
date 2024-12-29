@@ -5,52 +5,34 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { RideSearch } from "@/components/RideSearch";
 
-const featuredRides = [
-  {
-    from: "New York",
-    to: "Boston",
-    date: "Tomorrow, 9:00 AM",
-    price: 45,
-    seats: 3,
-    driver: {
-      name: "John Doe",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-  },
-  {
-    from: "San Francisco",
-    to: "Los Angeles",
-    date: "Friday, 10:30 AM",
-    price: 65,
-    seats: 2,
-    driver: {
-      name: "Jane Smith",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-  },
-  {
-    from: "Chicago",
-    to: "Detroit",
-    date: "Saturday, 8:00 AM",
-    price: 35,
-    seats: 4,
-    driver: {
-      name: "Mike Johnson",
-      rating: 4.7,
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    },
-  },
-];
+interface Ride {
+  id: string;
+  from_location: string;
+  to_location: string;
+  date: string;
+  price: number;
+  seats: number;
+  profiles: {
+    full_name: string | null;
+    rating: number;
+    avatar_url: string | null;
+  };
+}
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchResults, setSearchResults] = useState<Ride[]>([]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
+  };
+
+  const handleSearchResults = (rides: Ride[]) => {
+    setSearchResults(rides);
   };
 
   return (
@@ -75,17 +57,35 @@ const Index = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold tracking-tighter mb-4">
-              Featured Rides
+              Find a Ride
             </h2>
-            <p className="text-gray-500 max-w-[600px] mx-auto">
-              Discover popular routes and trusted drivers in your area
-            </p>
+            <RideSearch onSearchResults={handleSearchResults} />
           </motion.div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuredRides.map((ride, index) => (
-              <RideCard key={index} {...ride} />
-            ))}
-          </div>
+
+          {searchResults.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-2xl font-bold tracking-tighter mb-6">
+                Search Results
+              </h3>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {searchResults.map((ride) => (
+                  <RideCard
+                    key={ride.id}
+                    from={ride.from_location}
+                    to={ride.to_location}
+                    date={ride.date}
+                    price={ride.price}
+                    seats={ride.seats}
+                    driver={{
+                      name: ride.profiles.full_name || "Anonymous",
+                      rating: ride.profiles.rating,
+                      image: ride.profiles.avatar_url || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
