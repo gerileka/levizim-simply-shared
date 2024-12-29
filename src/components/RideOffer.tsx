@@ -40,6 +40,7 @@ export const RideOffer = () => {
       }
 
       // Then get their profile
+      let profileData;
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
@@ -72,7 +73,9 @@ export const RideOffer = () => {
           return;
         }
 
-        profile = newProfile;
+        profileData = newProfile;
+      } else {
+        profileData = profile;
       }
 
       // Now create the ride using the profile ID
@@ -80,7 +83,7 @@ export const RideOffer = () => {
         .from('rides')
         .insert([
           {
-            driver_id: profile.id,
+            driver_id: profileData.id,
             from_location: fromLocation,
             to_location: toLocation,
             date,
