@@ -64,7 +64,15 @@ export type Database = {
           seats?: number
           to_location?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "rides_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
