@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { DeleteProfileButton } from "@/components/profile/DeleteProfileButton";
+import { Button } from "@/components/ui/button";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
@@ -29,9 +30,12 @@ const Profile = () => {
         return;
       }
 
+      // Set email from auth user data
+      setEmail(user.email || '');
+
       const { data, error } = await supabase
         .from('profiles')
-        .select('name, surname, email, avatar_url')
+        .select('name, surname, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -40,7 +44,6 @@ const Profile = () => {
       if (data) {
         setName(data.name || '');
         setSurname(data.surname || '');
-        setEmail(data.email || '');
         setAvatarUrl(data.avatar_url || '');
       }
     } catch (error) {
@@ -131,9 +134,18 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container max-w-2xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center mb-8 gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="p-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-          <DeleteProfileButton onDelete={deleteProfile} />
+          <div className="flex-1 flex justify-end">
+            <DeleteProfileButton onDelete={deleteProfile} />
+          </div>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <ProfileForm
