@@ -22,7 +22,7 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
     try {
       const query = supabase
         .from('rides')
-        .select('*, profiles(full_name, avatar_url, rating)')
+        .select('*, profiles(name, surname, avatar_url, rating)')
         .gt('seats', 0);
 
       // Only add filters if values are provided
@@ -34,11 +34,20 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
 
       if (error) throw error;
 
-      console.log('Found rides:', data);
-      onSearchResults(data || []);
+      // Transform the data to include a full name
+      const transformedData = data?.map(ride => ({
+        ...ride,
+        profiles: {
+          ...ride.profiles,
+          full_name: `${ride.profiles.name || ''} ${ride.profiles.surname || ''}`.trim() || 'Anonymous'
+        }
+      }));
+
+      console.log('Found rides:', transformedData);
+      onSearchResults(transformedData || []);
       
       toast({
-        title: `Found ${data?.length || 0} rides`,
+        title: `Found ${transformedData?.length || 0} rides`,
         description: "Scroll down to see available rides",
       });
     } catch (error) {
