@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Hero } from "@/components/Hero";
 import { RideCard } from "@/components/RideCard";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -36,7 +36,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => navigate("/profile")}
+        >
+          <User className="w-4 h-4" />
+          Profile
+        </Button>
         <Button
           variant="outline"
           className="flex items-center gap-2"
