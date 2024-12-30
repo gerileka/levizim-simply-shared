@@ -2,21 +2,83 @@ import { motion } from "framer-motion";
 import { Calendar, MapPin, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface RideCardProps {
+  id: string;
   from: string;
   to: string;
   date: string;
   price: number;
   seats: number;
   driver: {
+    id: string;
     name: string;
     rating: number;
     image: string;
   };
 }
 
-export const RideCard = ({ from, to, date, price, seats, driver }: RideCardProps) => {
+export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardProps) => {
+  const [isBooking, setIsBooking] = useState(false);
+  const { toast } = useToast();
+
+  const handleBooking = async () => {
+    try {
+      setIsBooking(true);
+      
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to book a ride",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check if user is trying to book their own ride
+      if (user.id === driver.id) {
+        toast({
+          title: "Cannot book your own ride",
+          description: "You cannot book a ride that you're offering",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update the ride to decrease available seats
+      const { error: updateError } = await supabase
+        .from('rides')
+        .update({ seats: seats - 1 })
+        .eq('id', id)
+        .gt('seats', 0);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast({
+        title: "Ride booked successfully",
+        description: "Your booking has been confirmed",
+      });
+
+    } catch (error) {
+      console.error('Error booking ride:', error);
+      toast({
+        title: "Error booking ride",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,8 +123,12 @@ export const RideCard = ({ from, to, date, price, seats, driver }: RideCardProps
               <span>{seats} seats available</span>
             </div>
           </div>
-          <Button className="w-full mt-4 bg-sage-500 hover:bg-sage-600">
-            Book Now
+          <Button 
+            className="w-full mt-4 bg-sage-500 hover:bg-sage-600"
+            onClick={handleBooking}
+            disabled={isBooking || seats === 0}
+          >
+            {seats === 0 ? "Fully Booked" : isBooking ? "Booking..." : "Book Now"}
           </Button>
         </div>
       </Card>

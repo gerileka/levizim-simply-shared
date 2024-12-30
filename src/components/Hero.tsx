@@ -48,11 +48,11 @@ export const Hero = ({ onSearchResults }: HeroProps) => {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="search">
+                <TabsContent value="search" className="space-y-8">
                   <RideSearch onSearchResults={onSearchResults} />
                 </TabsContent>
 
-                <TabsContent value="offer">
+                <TabsContent value="offer" className="space-y-8">
                   <RideOffer />
                 </TabsContent>
               </Tabs>

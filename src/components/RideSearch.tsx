@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface RideSearchProps {
   onSearchResults: (rides: any[]) => void;
@@ -22,7 +22,7 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
     try {
       const query = supabase
         .from('rides')
-        .select('*, profiles(name, surname, avatar_url, rating)')
+        .select('*, profiles(id, name, surname, avatar_url, rating)')
         .gt('seats', 0);
 
       // Only add filters if values are provided
@@ -37,9 +37,11 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
       // Transform the data to include a full name
       const transformedData = data?.map(ride => ({
         ...ride,
-        profiles: {
-          ...ride.profiles,
-          full_name: `${ride.profiles.name || ''} ${ride.profiles.surname || ''}`.trim() || 'Anonymous'
+        driver: {
+          id: ride.profiles.id,
+          name: `${ride.profiles.name || ''} ${ride.profiles.surname || ''}`.trim() || 'Anonymous',
+          rating: ride.profiles.rating || 5.0,
+          image: ride.profiles.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
         }
       }));
 
