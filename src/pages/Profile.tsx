@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadAvatar } from "@/utils/uploadFile";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { ProfileForm } from "@/components/profile/ProfileForm";
+import { DeleteProfileButton } from "@/components/profile/DeleteProfileButton";
 
 const Profile = () => {
   const [loading, setLoading] = useState(true);
@@ -54,27 +52,6 @@ const Profile = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      const publicUrl = await uploadAvatar(file);
-      setAvatarUrl(publicUrl);
-      toast({
-        title: "Avatar uploaded",
-        description: "Your avatar has been updated successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast({
-        title: "Error uploading avatar",
-        description: "Please try again later",
-        variant: "destructive",
-      });
     }
   };
 
@@ -156,82 +133,20 @@ const Profile = () => {
       <div className="container max-w-2xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-          <Button
-            variant="destructive"
-            onClick={deleteProfile}
-            className="flex items-center gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Profile
-          </Button>
+          <DeleteProfileButton onDelete={deleteProfile} />
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
-          <form onSubmit={updateProfile} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="avatar">Profile Picture</Label>
-              {avatarUrl && (
-                <div className="mb-4">
-                  <img
-                    src={avatarUrl}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover"
-                  />
-                </div>
-              )}
-              <Input
-                id="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="cursor-pointer"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="surname">Surname</Label>
-              <Input
-                id="surname"
-                type="text"
-                value={surname}
-                onChange={(e) => setSurname(e.target.value)}
-                placeholder="Enter your surname"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                disabled
-                className="bg-gray-100"
-              />
-              <p className="text-sm text-gray-500">Email cannot be modified at this time</p>
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={updating}
-            >
-              {updating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                'Update Profile'
-              )}
-            </Button>
-          </form>
+          <ProfileForm
+            name={name}
+            setName={setName}
+            surname={surname}
+            setSurname={setSurname}
+            email={email}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
+            isUpdating={updating}
+            onSubmit={updateProfile}
+          />
         </div>
       </div>
     </div>
