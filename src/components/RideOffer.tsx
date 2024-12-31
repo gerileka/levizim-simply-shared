@@ -1,11 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { OfferForm } from "./offer/OfferForm";
 
 export const RideOffer = () => {
   const [from, setFrom] = useState("");
@@ -78,84 +75,19 @@ export const RideOffer = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="offer-from" className="text-stripe-text">From</Label>
-          <Input
-            id="offer-from"
-            placeholder="Departure city"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            required
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="offer-to" className="text-stripe-text">To</Label>
-          <Input
-            id="offer-to"
-            placeholder="Destination city"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            required
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
-        </div>
-      </div>
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-2">
-          <Label htmlFor="offer-date" className="text-stripe-text">Date</Label>
-          <Input
-            id="offer-date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="price" className="text-stripe-text">Price</Label>
-          <Input
-            id="price"
-            type="number"
-            placeholder="Price per seat"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
-            min="0"
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="seats" className="text-stripe-text">Available Seats</Label>
-          <Input
-            id="seats"
-            type="number"
-            placeholder="Number of seats"
-            value={seats}
-            onChange={(e) => setSeats(e.target.value)}
-            required
-            min="1"
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
-        </div>
-      </div>
-      <Button
-        type="submit"
-        className="w-full bg-stripe-accent hover:bg-stripe-accent/90"
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Offering Ride...
-          </>
-        ) : (
-          'Offer Ride'
-        )}
-      </Button>
-    </form>
+    <OfferForm
+      from={from}
+      setFrom={setFrom}
+      to={to}
+      setTo={setTo}
+      date={date}
+      setDate={setDate}
+      price={price}
+      setPrice={setPrice}
+      seats={seats}
+      setSeats={setSeats}
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+    />
   );
 };
