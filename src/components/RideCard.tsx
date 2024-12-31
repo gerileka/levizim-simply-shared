@@ -85,7 +85,7 @@ export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardP
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-stripe-secondary border-stripe-muted">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -95,36 +95,36 @@ export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardP
                 className="w-12 h-12 rounded-full object-cover"
               />
               <div>
-                <h3 className="font-medium">{driver.name}</h3>
-                <div className="flex items-center text-sm text-gray-500">
+                <h3 className="font-medium text-stripe-text">{driver.name}</h3>
+                <div className="flex items-center text-sm text-stripe-text/60">
                   <span className="flex items-center">
                     ★ {driver.rating.toFixed(1)}
                   </span>
                 </div>
               </div>
             </div>
-            <span className="text-2xl font-bold text-sage-500">${price}</span>
+            <span className="text-2xl font-bold text-stripe-accent">${price}</span>
           </div>
           <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-gray-600">
-              <MapPin className="h-5 w-5 text-sage-500" />
+            <div className="flex items-center space-x-2 text-stripe-text/80">
+              <MapPin className="h-5 w-5 text-stripe-accent" />
               <span>{from}</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <MapPin className="h-5 w-5 text-sage-500" />
+            <div className="flex items-center space-x-2 text-stripe-text/80">
+              <MapPin className="h-5 w-5 text-stripe-accent" />
               <span>{to}</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <Calendar className="h-5 w-5 text-sage-500" />
+            <div className="flex items-center space-x-2 text-stripe-text/80">
+              <Calendar className="h-5 w-5 text-stripe-accent" />
               <span>{date}</span>
             </div>
-            <div className="flex items-center space-x-2 text-gray-600">
-              <User className="h-5 w-5 text-sage-500" />
+            <div className="flex items-center space-x-2 text-stripe-text/80">
+              <User className="h-5 w-5 text-stripe-accent" />
               <span>{seats} seats available</span>
             </div>
           </div>
           <Button 
-            className="w-full mt-4 bg-sage-500 hover:bg-sage-600"
+            className="w-full mt-4 bg-stripe-accent hover:bg-stripe-accent/90 text-white"
             onClick={handleBooking}
             disabled={isBooking || seats === 0}
           >

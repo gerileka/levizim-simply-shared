@@ -19,17 +19,12 @@ export default {
     },
     extend: {
       colors: {
-        sage: {
-          50: "#f0fdf4",
-          100: "#dcfce7",
-          200: "#bbf7d0",
-          300: "#86efac",
-          400: "#4ade80",
-          500: "#34D399", // Our primary color
-          600: "#16a34a",
-          700: "#15803d",
-          800: "#166534",
-          900: "#14532d",
+        stripe: {
+          bg: "#1A1F2C",
+          text: "#F1F1F1",
+          accent: "#9b87f5",
+          secondary: "#403E43",
+          muted: "#221F26",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -37,7 +32,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#34D399",
+          DEFAULT: "#9b87f5",
           foreground: "#ffffff",
         },
         secondary: {
