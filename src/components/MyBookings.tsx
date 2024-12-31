@@ -28,12 +28,35 @@ export const MyBookings = () => {
 
   useEffect(() => {
     fetchBookings();
+
+    // Set up real-time subscription
+    const subscription = supabase
+      .channel('bookings_channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'bookings'
+        },
+        () => {
+          console.log('Booking changed, refreshing...');
+          fetchBookings();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchBookings = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      console.log('Fetching bookings for user:', user.id);
 
       const { data, error } = await supabase
         .from('bookings')
@@ -56,7 +79,12 @@ export const MyBookings = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching bookings:', error);
+        throw error;
+      }
+
+      console.log('Fetched bookings:', data);
       setBookings(data || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
