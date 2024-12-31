@@ -22,14 +22,18 @@ export const RideOffer = () => {
     setIsLoading(true);
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("name")
-        .single();
+        .eq('id', user.id)
+        .maybeSingle();
 
       if (profileError) throw profileError;
 
-      if (!profile.name) {
+      if (!profile?.name) {
         toast({
           title: "Profile incomplete",
           description: "Please complete your profile before offering a ride",
@@ -38,9 +42,6 @@ export const RideOffer = () => {
         navigate("/profile");
         return;
       }
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
 
       const { error } = await supabase.from("rides").insert({
         driver_id: user.id,
