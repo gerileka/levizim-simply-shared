@@ -22,7 +22,7 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
     setIsLoading(true);
 
     try {
-      const { data: rides, error } = await supabase
+      let query = supabase
         .from("rides")
         .select(`
           *,
@@ -34,8 +34,14 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
           )
         `)
         .eq("from_location", from)
-        .eq("to_location", to)
-        .gte("date", date);
+        .eq("to_location", to);
+
+      // Only filter by date if a date is provided
+      if (date) {
+        query = query.gte("date", date);
+      }
+
+      const { data: rides, error } = await query;
 
       if (error) throw error;
 
@@ -85,13 +91,12 @@ export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="date" className="text-stripe-text">Date</Label>
+          <Label htmlFor="date" className="text-stripe-text">Date (Optional)</Label>
           <Input
             id="date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            required
             className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
