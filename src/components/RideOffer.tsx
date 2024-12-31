@@ -1,98 +1,55 @@
-import { Car } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const RideOffer = () => {
-  const [fromLocation, setFromLocation] = useState("");
-  const [toLocation, setToLocation] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [date, setDate] = useState("");
   const [price, setPrice] = useState("");
   const [seats, setSeats] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleOffer = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!fromLocation || !toLocation || !date || !price || !seats) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
+    setIsLoading(true);
 
     try {
-      // First get the user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to offer a ride",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Then get their profile
-      let profileData;
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+        .from("profiles")
+        .select("name")
+        .single();
 
-      if (profileError) {
+      if (profileError) throw profileError;
+
+      if (!profile.name) {
         toast({
-          title: "Error fetching profile",
-          description: "Please try again later",
+          title: "Profile incomplete",
+          description: "Please complete your profile before offering a ride",
           variant: "destructive",
         });
+        navigate("/profile");
         return;
       }
 
-      if (!profile) {
-        // Create profile if it doesn't exist
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert([{ id: user.id }])
-          .select('id')
-          .single();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
 
-        if (createError || !newProfile) {
-          toast({
-            title: "Error creating profile",
-            description: "Please try again later",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        profileData = newProfile;
-      } else {
-        profileData = profile;
-      }
-
-      // Now create the ride using the profile ID
-      const { data, error } = await supabase
-        .from('rides')
-        .insert([
-          {
-            driver_id: profileData.id,
-            from_location: fromLocation,
-            to_location: toLocation,
-            date,
-            price: parseFloat(price),
-            seats: parseInt(seats),
-          }
-        ])
-        .select()
-        .single();
+      const { error } = await supabase.from("rides").insert({
+        driver_id: user.id,
+        from_location: from,
+        to_location: to,
+        date,
+        price: Number(price),
+        seats: Number(seats),
+      });
 
       if (error) throw error;
 
@@ -101,83 +58,102 @@ export const RideOffer = () => {
         description: "Your ride has been posted",
       });
 
-      // Clear form
-      setFromLocation("");
-      setToLocation("");
+      // Reset form
+      setFrom("");
+      setTo("");
       setDate("");
       setPrice("");
       setSeats("");
     } catch (error) {
-      console.error('Error offering ride:', error);
+      console.error("Error offering ride:", error);
       toast({
         title: "Error offering ride",
         description: "Please try again later",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleOffer} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="from-offer">From</Label>
+          <Label htmlFor="offer-from" className="text-stripe-text">From</Label>
           <Input
-            id="from-offer"
-            placeholder="Enter departure city"
-            value={fromLocation}
-            onChange={(e) => setFromLocation(e.target.value)}
+            id="offer-from"
+            placeholder="Departure city"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
             required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="to-offer">To</Label>
+          <Label htmlFor="offer-to" className="text-stripe-text">To</Label>
           <Input
-            id="to-offer"
-            placeholder="Enter destination city"
-            value={toLocation}
-            onChange={(e) => setToLocation(e.target.value)}
+            id="offer-to"
+            placeholder="Destination city"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
             required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="date-offer">Date</Label>
+          <Label htmlFor="offer-date" className="text-stripe-text">Date</Label>
           <Input
-            id="date-offer"
+            id="offer-date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="price">Price</Label>
+          <Label htmlFor="price" className="text-stripe-text">Price</Label>
           <Input
             id="price"
             type="number"
-            placeholder="Enter price"
+            placeholder="Price per seat"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
+            min="0"
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="seats">Available Seats</Label>
+          <Label htmlFor="seats" className="text-stripe-text">Available Seats</Label>
           <Input
             id="seats"
             type="number"
-            placeholder="Enter number of seats"
+            placeholder="Number of seats"
             value={seats}
             onChange={(e) => setSeats(e.target.value)}
             required
+            min="1"
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
       </div>
-      <Button type="submit" className="w-full bg-sage-500 hover:bg-sage-600">
-        Offer Ride
-        <Car className="ml-2 h-4 w-4" />
+      <Button
+        type="submit"
+        className="w-full bg-stripe-accent hover:bg-stripe-accent/90"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Offering Ride...
+          </>
+        ) : (
+          'Offer Ride'
+        )}
       </Button>
     </form>
   );

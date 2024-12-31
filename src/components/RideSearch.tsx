@@ -1,101 +1,114 @@
-import { Search } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface RideSearchProps {
   onSearchResults: (rides: any[]) => void;
 }
 
 export const RideSearch = ({ onSearchResults }: RideSearchProps) => {
-  const [fromLocation, setFromLocation] = useState("");
-  const [toLocation, setToLocation] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
   const [date, setDate] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+
     try {
-      const query = supabase
-        .from('rides')
-        .select('*, profiles(id, name, surname, avatar_url, rating)')
-        .gt('seats', 0);
-
-      // Only add filters if values are provided
-      if (fromLocation) query.eq('from_location', fromLocation);
-      if (toLocation) query.eq('to_location', toLocation);
-      if (date) query.eq('date', date);
-
-      const { data, error } = await query;
+      const { data: rides, error } = await supabase
+        .from("rides")
+        .select(`
+          *,
+          driver:profiles!rides_driver_id_fkey (
+            id,
+            name,
+            rating,
+            avatar_url
+          )
+        `)
+        .eq("from_location", from)
+        .eq("to_location", to)
+        .gte("date", date);
 
       if (error) throw error;
 
-      // Transform the data to include a full name
-      const transformedData = data?.map(ride => ({
-        ...ride,
-        driver: {
-          id: ride.profiles.id,
-          name: `${ride.profiles.name || ''} ${ride.profiles.surname || ''}`.trim() || 'Anonymous',
-          rating: ride.profiles.rating || 5.0,
-          image: ride.profiles.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        }
-      }));
-
-      console.log('Found rides:', transformedData);
-      onSearchResults(transformedData || []);
+      onSearchResults(rides || []);
       
-      toast({
-        title: `Found ${transformedData?.length || 0} rides`,
-        description: "Scroll down to see available rides",
-      });
+      if (rides.length === 0) {
+        toast({
+          title: "No rides found",
+          description: "Try different search criteria",
+        });
+      }
     } catch (error) {
-      console.error('Error searching rides:', error);
+      console.error("Error searching rides:", error);
       toast({
         title: "Error searching rides",
         description: "Please try again later",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSearch} className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+    <form onSubmit={handleSearch} className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="from-search">From</Label>
+          <Label htmlFor="from" className="text-stripe-text">From</Label>
           <Input
-            id="from-search"
-            placeholder="Enter departure city"
-            value={fromLocation}
-            onChange={(e) => setFromLocation(e.target.value)}
+            id="from"
+            placeholder="Departure city"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="to-search">To</Label>
+          <Label htmlFor="to" className="text-stripe-text">To</Label>
           <Input
-            id="to-search"
-            placeholder="Enter destination city"
-            value={toLocation}
-            onChange={(e) => setToLocation(e.target.value)}
+            id="to"
+            placeholder="Destination city"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="date-search">Date</Label>
+          <Label htmlFor="date" className="text-stripe-text">Date</Label>
           <Input
-            id="date-search"
+            id="date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            required
+            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
           />
         </div>
       </div>
-      <Button type="submit" className="w-full bg-sage-500 hover:bg-sage-600">
-        Search Rides
-        <Search className="ml-2 h-4 w-4" />
+      <Button
+        type="submit"
+        className="w-full bg-stripe-accent hover:bg-stripe-accent/90"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Searching...
+          </>
+        ) : (
+          'Search Rides'
+        )}
       </Button>
     </form>
   );
