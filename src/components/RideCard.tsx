@@ -51,16 +51,44 @@ export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardP
         return;
       }
 
+      // Start a transaction by first checking and updating the ride
+      const { data: ride, error: rideError } = await supabase
+        .from('rides')
+        .select('seats')
+        .eq('id', id)
+        .single();
+
+      if (rideError) throw rideError;
+
+      if (!ride || ride.seats <= 0) {
+        toast({
+          title: "Ride unavailable",
+          description: "This ride is fully booked",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create the booking first
+      const { error: bookingError } = await supabase
+        .from('bookings')
+        .insert([
+          {
+            ride_id: id,
+            user_id: user.id,
+            status: 'confirmed'
+          }
+        ]);
+
+      if (bookingError) throw bookingError;
+
       // Update the ride to decrease available seats
       const { error: updateError } = await supabase
         .from('rides')
         .update({ seats: seats - 1 })
-        .eq('id', id)
-        .gt('seats', 0);
+        .eq('id', id);
 
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
 
       toast({
         title: "Ride booked successfully",
