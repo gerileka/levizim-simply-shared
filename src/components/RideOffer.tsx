@@ -24,16 +24,16 @@ export const RideOffer = () => {
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("name")
+        .select("name, surname")
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
       if (profileError) throw profileError;
 
-      if (!profile?.name) {
+      if (!profile?.name || !profile?.surname) {
         toast({
           title: "Profile incomplete",
-          description: "Please complete your profile before offering a ride",
+          description: "Please complete your name and surname before offering a ride",
           variant: "destructive",
         });
         navigate("/profile");

@@ -1,10 +1,10 @@
-import { motion } from "framer-motion";
-import { Calendar, MapPin, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface RideCardProps {
   id: string;
@@ -17,37 +17,47 @@ interface RideCardProps {
     id: string;
     name: string;
     rating: number;
-    image: string;
+    avatar_url: string;
   };
+  onBook?: () => void;
 }
 
-export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardProps) => {
-  const [isBooking, setIsBooking] = useState(false);
+export const RideCard = ({
+  id,
+  from,
+  to,
+  date,
+  price,
+  seats,
+  driver,
+  onBook,
+}: RideCardProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleBooking = async () => {
+  const handleBook = async () => {
+    setIsLoading(true);
     try {
-      setIsBooking(true);
-      
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to book a ride",
-          variant: "destructive",
-        });
-        return;
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
-      // Check if user is trying to book their own ride
-      if (user.id === driver.id) {
+      // Check if user profile is complete
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("name, surname")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (!profile?.name || !profile?.surname) {
         toast({
-          title: "Cannot book your own ride",
-          description: "You cannot book a ride that you're offering",
+          title: "Profile incomplete",
+          description: "Please complete your profile before booking a ride",
           variant: "destructive",
         });
+        navigate("/profile");
         return;
       }
 
@@ -92,74 +102,68 @@ export const RideCard = ({ id, from, to, date, price, seats, driver }: RideCardP
 
       toast({
         title: "Ride booked successfully",
-        description: "Your booking has been confirmed",
+        description: "Your ride has been booked",
       });
 
+      if (onBook) onBook();
     } catch (error) {
-      console.error('Error booking ride:', error);
+      console.error("Error booking ride:", error);
       toast({
         title: "Error booking ride",
         description: "Please try again later",
         variant: "destructive",
       });
     } finally {
-      setIsBooking(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-stripe-secondary border-stripe-muted">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <img
-                src={driver.image}
-                alt={driver.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="font-medium text-stripe-text">{driver.name}</h3>
-                <div className="flex items-center text-sm text-stripe-text/60">
-                  <span className="flex items-center">
-                    ★ {driver.rating.toFixed(1)}
-                  </span>
-                </div>
+    <Card className="bg-stripe-secondary border-stripe-muted">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <img
+              src={driver.avatar_url || '/placeholder.svg'}
+              alt={driver.name}
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <h3 className="font-medium text-stripe-text">
+                {driver.name}
+              </h3>
+              <div className="text-sm text-stripe-text/60">
+                ★ {driver.rating.toFixed(1)}
               </div>
             </div>
-            <span className="text-2xl font-bold text-stripe-accent">${price}</span>
           </div>
-          <div className="space-y-3">
-            <div className="flex items-center space-x-2 text-stripe-text/80">
-              <MapPin className="h-5 w-5 text-stripe-accent" />
-              <span>{from}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-stripe-text/80">
-              <MapPin className="h-5 w-5 text-stripe-accent" />
-              <span>{to}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-stripe-text/80">
-              <Calendar className="h-5 w-5 text-stripe-accent" />
-              <span>{date}</span>
-            </div>
-            <div className="flex items-center space-x-2 text-stripe-text/80">
-              <User className="h-5 w-5 text-stripe-accent" />
-              <span>{seats} seats available</span>
-            </div>
-          </div>
-          <Button 
-            className="w-full mt-4 bg-stripe-accent hover:bg-stripe-accent/90 text-white"
-            onClick={handleBooking}
-            disabled={isBooking || seats === 0}
+          <Button
+            onClick={handleBook}
+            disabled={isLoading || seats === 0}
+            className="bg-stripe-accent hover:bg-stripe-accent/90"
           >
-            {seats === 0 ? "Fully Booked" : isBooking ? "Booking..." : "Book Now"}
+            {isLoading ? "Booking..." : `Book - $${price}`}
           </Button>
         </div>
-      </Card>
-    </motion.div>
+        <div className="space-y-2">
+          <div className="flex items-center text-stripe-text/80">
+            <MapPin className="h-4 w-4 mr-2 text-stripe-accent" />
+            {from}
+          </div>
+          <div className="flex items-center text-stripe-text/80">
+            <MapPin className="h-4 w-4 mr-2 text-stripe-accent" />
+            {to}
+          </div>
+          <div className="flex items-center text-stripe-text/80">
+            <Calendar className="h-4 w-4 mr-2 text-stripe-accent" />
+            {new Date(date).toLocaleDateString()}
+          </div>
+          <div className="flex items-center text-stripe-text/80">
+            <User className="h-4 w-4 mr-2 text-stripe-accent" />
+            {seats} {seats === 1 ? "seat" : "seats"} available
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 };
