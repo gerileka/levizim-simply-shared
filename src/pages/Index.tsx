@@ -1,12 +1,8 @@
 import { motion } from "framer-motion";
 import { Hero } from "@/components/Hero";
 import { RideCard } from "@/components/RideCard";
-import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { MyBookings } from "@/components/MyBookings";
+import { SlidingMenu } from "@/components/SlidingMenu";
 
 interface Ride {
   id: string;
@@ -24,13 +20,7 @@ interface Ride {
 }
 
 const Index = () => {
-  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState<Ride[]>([]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth");
-  };
 
   const handleSearchResults = (rides: Ride[]) => {
     setSearchResults(rides);
@@ -38,28 +28,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-stripe-bg text-stripe-text">
-      <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 bg-stripe-secondary text-stripe-text border-stripe-muted hover:bg-stripe-muted"
-          onClick={() => navigate("/profile")}
-        >
-          <User className="w-4 h-4" />
-          Profile
-        </Button>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 bg-stripe-secondary text-stripe-text border-stripe-muted hover:bg-stripe-muted"
-          onClick={handleLogout}
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </Button>
-      </div>
+      <SlidingMenu />
       <Hero onSearchResults={handleSearchResults} />
       <section className="py-16 bg-stripe-bg">
         <div className="container px-4 md:px-6">
-          {searchResults.length > 0 ? (
+          {searchResults.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -83,8 +56,6 @@ const Index = () => {
                 ))}
               </div>
             </motion.div>
-          ) : (
-            <MyBookings />
           )}
         </div>
       </section>

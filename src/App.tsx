@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import Profile from "./pages/Profile";
+import BookingsPage from "./pages/Bookings";
+import OffersPage from "./pages/Offers";
 import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
@@ -60,6 +62,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings"
+              element={
+                <ProtectedRoute>
+                  <BookingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/offers"
+              element={
+                <ProtectedRoute>
+                  <OffersPage />
                 </ProtectedRoute>
               }
             />
