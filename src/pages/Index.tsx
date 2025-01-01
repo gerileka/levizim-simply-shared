@@ -6,7 +6,7 @@ import { LogOut, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { UserRides } from "@/components/UserRides";
+import { MyBookings } from "@/components/MyBookings";
 
 interface Ride {
   id: string;
@@ -84,7 +84,7 @@ const Index = () => {
               </div>
             </motion.div>
           ) : (
-            <UserRides />
+            <MyBookings />
           )}
         </div>
       </section>
