@@ -15,7 +15,7 @@ interface Ride {
     id: string;
     name: string;
     rating: number;
-    image: string;
+    avatar_url: string;  // Changed from 'image' to 'avatar_url'
   };
 }
 
