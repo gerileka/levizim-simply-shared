@@ -11,17 +11,30 @@ import Profile from "./pages/Profile";
 import BookingsPage from "./pages/Bookings";
 import OffersPage from "./pages/Offers";
 import { supabase } from "./integrations/supabase/client";
+import { useToast } from "./hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        
+        // If we get a 403 session_not_found error, clear the session
+        if (error?.message?.includes('session_not_found')) {
+          await supabase.auth.signOut({ scope: 'local' });
+          setIsAuthenticated(false);
+          toast({
+            title: "Session expired",
+            description: "Please sign in again",
+          });
+          return;
+        }
+
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error('Error checking auth status:', error);
