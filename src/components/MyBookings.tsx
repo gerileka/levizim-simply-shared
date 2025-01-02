@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { BookingCard } from "./bookings/BookingCard";
+import { useNavigate } from "react-router-dom";
 
 interface Booking {
   id: string;
@@ -13,7 +14,7 @@ interface Booking {
     price: number;
     seats: number;
     driver: {
-      id: string;  // Added this line to include the driver's id
+      id: string;
       name: string;
       rating: number;
       avatar_url: string;
@@ -26,10 +27,11 @@ export const MyBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchBookings();
-
+    checkUser();
+    
     // Set up real-time subscription
     const subscription = supabase
       .channel('bookings_channel')
@@ -52,12 +54,36 @@ export const MyBookings = () => {
     };
   }, []);
 
+  const checkUser = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) throw error;
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      fetchBookings();
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      navigate('/auth');
+    }
+  };
+
   const fetchBookings = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) throw sessionError;
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
 
-      console.log('Fetching bookings for user:', user.id);
+      console.log('Fetching bookings for user:', session.user.id);
 
       const { data, error } = await supabase
         .from('bookings')
@@ -78,7 +104,7 @@ export const MyBookings = () => {
             )
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
