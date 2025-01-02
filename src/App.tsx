@@ -78,7 +78,7 @@ const App = () => (
               path="/bookings"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <BookingsPage />
                 </ProtectedRoute>
               }
             />

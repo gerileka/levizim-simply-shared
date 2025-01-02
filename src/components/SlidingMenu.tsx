@@ -18,26 +18,16 @@ export const SlidingMenu = () => {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error during sign out:', error);
-        toast({
-          title: "Error signing out",
-          description: "Please try again",
-          variant: "destructive",
-        });
-        return;
-      }
-      navigate("/auth");
-    } catch (error) {
-      console.error('Unexpected error during logout:', error);
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    if (error) {
       toast({
         title: "Error signing out",
         description: "Please try again",
         variant: "destructive",
       });
+      return;
     }
+    navigate("/auth");
   };
 
   const menuItems = [
