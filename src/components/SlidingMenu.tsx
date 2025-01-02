@@ -19,23 +19,6 @@ export const SlidingMenu = () => {
 
   const handleLogout = async () => {
     try {
-      // First check if we have a session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Error checking session:', sessionError);
-        // If there's an error checking session, just redirect to auth
-        navigate("/auth");
-        return;
-      }
-
-      if (!session) {
-        // If no session exists, just redirect to auth page
-        navigate("/auth");
-        return;
-      }
-
-      // If we have a session, attempt to sign out
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error('Error during sign out:', error);
@@ -46,8 +29,6 @@ export const SlidingMenu = () => {
         });
         return;
       }
-
-      // Successfully signed out
       navigate("/auth");
     } catch (error) {
       console.error('Unexpected error during logout:', error);
