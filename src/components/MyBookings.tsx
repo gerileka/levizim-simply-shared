@@ -13,6 +13,7 @@ interface Booking {
     price: number;
     seats: number;
     driver: {
+      id: string;  // Added this line to include the driver's id
       name: string;
       rating: number;
       avatar_url: string;
@@ -70,6 +71,7 @@ export const MyBookings = () => {
             price,
             seats,
             driver:profiles (
+              id,
               name,
               rating,
               avatar_url
