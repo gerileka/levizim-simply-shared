@@ -12,6 +12,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
+const clearAuthState = () => {
+  window.localStorage.removeItem('supabase.auth.token');
+  window.localStorage.removeItem('sb-zhjvtesetmqhseghrssf-auth-token');
+};
+
 export const SlidingMenu = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -21,10 +26,8 @@ export const SlidingMenu = () => {
     try {
       const { error } = await supabase.auth.signOut({ scope: 'local' });
       
-      // Handle user_not_found error specifically
       if (error?.message?.includes('user_not_found')) {
-        // Clear local storage manually
-        window.localStorage.removeItem('supabase.auth.token');
+        clearAuthState();
         navigate("/auth");
         return;
       }
@@ -41,8 +44,7 @@ export const SlidingMenu = () => {
       navigate("/auth");
     } catch (error) {
       console.error('Error during logout:', error);
-      // Force clear local storage and redirect on any error
-      window.localStorage.removeItem('supabase.auth.token');
+      clearAuthState();
       navigate("/auth");
     }
   };

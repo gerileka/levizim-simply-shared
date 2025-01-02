@@ -15,6 +15,11 @@ import { useToast } from "./hooks/use-toast";
 
 const queryClient = new QueryClient();
 
+const clearAuthState = () => {
+  window.localStorage.removeItem('supabase.auth.token');
+  window.localStorage.removeItem('sb-zhjvtesetmqhseghrssf-auth-token');
+};
+
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const { toast } = useToast();
@@ -24,10 +29,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        // Handle both session_not_found and user_not_found errors
-        if (error?.message?.includes('session_not_found') || error?.message?.includes('user_not_found')) {
-          // Clear local storage manually
-          window.localStorage.removeItem('supabase.auth.token');
+        if (error?.message?.includes('user_not_found') || error?.message?.includes('session_not_found')) {
+          clearAuthState();
           setIsAuthenticated(false);
           toast({
             title: "Session expired",
@@ -39,8 +42,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error('Error checking auth status:', error);
-        // Force clear local storage on any error
-        window.localStorage.removeItem('supabase.auth.token');
+        clearAuthState();
         setIsAuthenticated(false);
       }
     };
