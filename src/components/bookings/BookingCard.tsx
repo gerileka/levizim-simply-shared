@@ -44,7 +44,7 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
       setCurrentStatus(newStatus);
       toast({
         title: `Booking ${newStatus}`,
-        description: `You have ${newStatus} this booking`,
+        description: `The booking has been ${newStatus}`,
       });
     } catch (error) {
       console.error('Error updating booking status:', error);

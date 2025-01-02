@@ -56,6 +56,8 @@ export const RideOffer = () => {
         description: "Your ride has been posted",
       });
 
+      navigate("/offers"); // Redirect to offers page after successful creation
+
       // Reset form
       setFrom("");
       setTo("");
