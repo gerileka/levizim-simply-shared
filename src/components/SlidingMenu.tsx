@@ -18,16 +18,33 @@ export const SlidingMenu = () => {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
-    if (error) {
-      toast({
-        title: "Error signing out",
-        description: "Please try again",
-        variant: "destructive",
-      });
-      return;
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      
+      // Handle user_not_found error specifically
+      if (error?.message?.includes('user_not_found')) {
+        // Clear local storage manually
+        window.localStorage.removeItem('supabase.auth.token');
+        navigate("/auth");
+        return;
+      }
+      
+      if (error) {
+        toast({
+          title: "Error signing out",
+          description: "Please try again",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      navigate("/auth");
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force clear local storage and redirect on any error
+      window.localStorage.removeItem('supabase.auth.token');
+      navigate("/auth");
     }
-    navigate("/auth");
   };
 
   const menuItems = [

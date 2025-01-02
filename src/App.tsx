@@ -24,9 +24,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        // If we get a 403 session_not_found error, clear the session
-        if (error?.message?.includes('session_not_found')) {
-          await supabase.auth.signOut({ scope: 'local' });
+        // Handle both session_not_found and user_not_found errors
+        if (error?.message?.includes('session_not_found') || error?.message?.includes('user_not_found')) {
+          // Clear local storage manually
+          window.localStorage.removeItem('supabase.auth.token');
           setIsAuthenticated(false);
           toast({
             title: "Session expired",
@@ -38,6 +39,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error('Error checking auth status:', error);
+        // Force clear local storage on any error
+        window.localStorage.removeItem('supabase.auth.token');
         setIsAuthenticated(false);
       }
     };
