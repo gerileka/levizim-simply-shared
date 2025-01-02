@@ -16,8 +16,15 @@ import { useToast } from "./hooks/use-toast";
 const queryClient = new QueryClient();
 
 const clearAuthState = () => {
-  window.localStorage.removeItem('supabase.auth.token');
-  window.localStorage.removeItem('sb-zhjvtesetmqhseghrssf-auth-token');
+  // Clear all Supabase-related items from localStorage
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('sb-') || key.startsWith('supabase.')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Clear any existing sessions
+  supabase.auth.signOut();
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -29,7 +36,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error?.message?.includes('user_not_found') || error?.message?.includes('session_not_found')) {
+        if (error || !session) {
           clearAuthState();
           setIsAuthenticated(false);
           toast({
@@ -39,7 +46,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
-        setIsAuthenticated(!!session);
+        setIsAuthenticated(true);
       } catch (error) {
         console.error('Error checking auth status:', error);
         clearAuthState();

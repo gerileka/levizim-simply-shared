@@ -13,8 +13,15 @@ import {
 } from "@/components/ui/sheet";
 
 const clearAuthState = () => {
-  window.localStorage.removeItem('supabase.auth.token');
-  window.localStorage.removeItem('sb-zhjvtesetmqhseghrssf-auth-token');
+  // Clear all Supabase-related items from localStorage
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('sb-') || key.startsWith('supabase.')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Clear any existing sessions
+  supabase.auth.signOut();
 };
 
 export const SlidingMenu = () => {
@@ -24,24 +31,12 @@ export const SlidingMenu = () => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
-      
-      if (error?.message?.includes('user_not_found')) {
-        clearAuthState();
-        navigate("/auth");
-        return;
-      }
-      
-      if (error) {
-        toast({
-          title: "Error signing out",
-          description: "Please try again",
-          variant: "destructive",
-        });
-        return;
-      }
-      
+      clearAuthState();
       navigate("/auth");
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
     } catch (error) {
       console.error('Error during logout:', error);
       clearAuthState();
