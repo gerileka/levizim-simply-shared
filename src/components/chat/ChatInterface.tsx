@@ -1,20 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  created_at: string;
-  sender: {
-    name: string;
-    avatar_url: string;
-  };
-}
+import { ChatMessage } from "./ChatMessage";
+import { ChatInput } from "./ChatInput";
 
 interface ChatInterfaceProps {
   bookingId: string;
@@ -31,7 +21,7 @@ export const ChatInterface = ({
   isDriver,
   status 
 }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -39,7 +29,6 @@ export const ChatInterface = ({
   useEffect(() => {
     fetchMessages();
     
-    // Set up real-time subscription
     const channel = supabase
       .channel(`booking_${bookingId}`)
       .on(
@@ -65,7 +54,7 @@ export const ChatInterface = ({
           const newMessage = {
             ...payload.new,
             sender: senderData
-          } as Message;
+          };
 
           setMessages(prevMessages => [...prevMessages, newMessage]);
         }
@@ -85,6 +74,7 @@ export const ChatInterface = ({
           id,
           content,
           created_at,
+          sender_id,
           sender:profiles!messages_sender_id_fkey (
             name,
             avatar_url
@@ -143,29 +133,11 @@ export const ChatInterface = ({
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((message) => (
-            <div
+            <ChatMessage
               key={message.id}
-              className={`flex ${
-                message.sender.name === currentUserId ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div className="flex items-start gap-2 max-w-[80%]">
-                <img
-                  src={message.sender.avatar_url || "/placeholder.svg"}
-                  alt={message.sender.name}
-                  className="w-8 h-8 rounded-full"
-                />
-                <div className="bg-stripe-accent/10 rounded-lg p-3">
-                  <p className="text-sm font-medium text-stripe-text">
-                    {message.sender.name}
-                  </p>
-                  <p className="text-stripe-text/80">{message.content}</p>
-                  <p className="text-xs text-stripe-text/60 mt-1">
-                    {new Date(message.created_at).toLocaleTimeString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+              message={message}
+              isCurrentUser={message.sender_id === currentUserId}
+            />
           ))}
         </div>
       </ScrollArea>
@@ -190,20 +162,12 @@ export const ChatInterface = ({
         </div>
       )}
 
-      <form onSubmit={sendMessage} className="p-4 border-t border-stripe-muted">
-        <div className="flex gap-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isLoading}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </form>
+      <ChatInput
+        newMessage={newMessage}
+        setNewMessage={setNewMessage}
+        onSend={sendMessage}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
