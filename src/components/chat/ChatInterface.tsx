@@ -41,7 +41,7 @@ export const ChatInterface = ({
     
     // Set up real-time subscription
     const channel = supabase
-      .channel(`messages_${bookingId}`)
+      .channel(`booking_${bookingId}`)
       .on(
         'postgres_changes',
         {
@@ -50,8 +50,23 @@ export const ChatInterface = ({
           table: 'messages',
           filter: `booking_id=eq.${bookingId}`
         },
-        (payload) => {
-          const newMessage = payload.new as Message;
+        async (payload) => {
+          const { data: senderData, error: senderError } = await supabase
+            .from('profiles')
+            .select('name, avatar_url')
+            .eq('id', payload.new.sender_id)
+            .single();
+
+          if (senderError) {
+            console.error('Error fetching sender data:', senderError);
+            return;
+          }
+
+          const newMessage = {
+            ...payload.new,
+            sender: senderData
+          } as Message;
+
           setMessages(prevMessages => [...prevMessages, newMessage]);
         }
       )
@@ -96,12 +111,15 @@ export const ChatInterface = ({
 
     setIsLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
       const { error } = await supabase
         .from('messages')
         .insert([
           {
             booking_id: bookingId,
-            sender_id: currentUserId,
+            sender_id: user.id,
             content: newMessage.trim()
           }
         ]);

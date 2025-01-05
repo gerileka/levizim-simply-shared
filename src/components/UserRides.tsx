@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Calendar, MapPin, Trash2, MessageCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ChatInterface } from "./chat/ChatInterface";
+import { RideCard } from "./rides/RideCard";
+import { BookingRequests } from "./rides/BookingRequests";
 
 interface OfferedRide {
   id: string;
@@ -132,103 +131,13 @@ export const UserRides = () => {
         ) : (
           offeredRides.map((ride) => (
             <Card key={ride.id} className="p-6 bg-stripe-secondary border-stripe-muted">
-              <div className="space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-stripe-text/80">
-                      <MapPin className="h-5 w-5 text-stripe-accent" />
-                      <span>{ride.from_location}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-stripe-text/80">
-                      <MapPin className="h-5 w-5 text-stripe-accent" />
-                      <span>{ride.to_location}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-stripe-text/80">
-                      <Calendar className="h-5 w-5 text-stripe-accent" />
-                      <span>{new Date(ride.date).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteRide(ride.id)}
-                    className="text-red-500 hover:text-red-600 hover:bg-red-100"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-stripe-text/60">{ride.seats} seats available</span>
-                  <span className="text-lg font-semibold text-stripe-accent">${ride.price}</span>
-                </div>
-
-                {ride.bookings && ride.bookings.length > 0 && (
-                  <div className="mt-4 border-t border-stripe-muted pt-4">
-                    <h3 className="text-sm font-semibold text-stripe-text mb-2">Booking Requests</h3>
-                    <div className="space-y-3">
-                      {ride.bookings.map((booking) => (
-                        <div key={booking.id} className="bg-stripe-bg p-3 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <img
-                                src={booking.user.avatar_url || '/placeholder.svg'}
-                                alt={booking.user.name}
-                                className="w-8 h-8 rounded-full"
-                              />
-                              <span className="text-sm text-stripe-text">{booking.user.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setSelectedBooking(selectedBooking === booking.id ? null : booking.id)}
-                                className="text-stripe-text/60 hover:text-stripe-text"
-                              >
-                                <MessageCircle className="h-4 w-4" />
-                              </Button>
-                              {booking.status === 'pending' && (
-                                <div className="flex space-x-2">
-                                  <Button
-                                    onClick={() => handleBookingStatusChange(booking.id, 'accepted')}
-                                    className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
-                                  >
-                                    Accept
-                                  </Button>
-                                  <Button
-                                    onClick={() => handleBookingStatusChange(booking.id, 'rejected')}
-                                    className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
-                                  >
-                                    Reject
-                                  </Button>
-                                </div>
-                              )}
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                booking.status === 'accepted' ? 'bg-green-100 text-green-800' : 
-                                booking.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                              </span>
-                            </div>
-                          </div>
-                          {selectedBooking === booking.id && (
-                            <div className="mt-4">
-                              <ChatInterface
-                                bookingId={booking.id}
-                                currentUserId={booking.user.id}
-                                onStatusChange={(status) => handleBookingStatusChange(booking.id, status)}
-                                isDriver={true}
-                                status={booking.status}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <RideCard ride={ride} onDelete={handleDeleteRide} />
+              <BookingRequests
+                bookings={ride.bookings}
+                onStatusChange={handleBookingStatusChange}
+                selectedBooking={selectedBooking}
+                setSelectedBooking={setSelectedBooking}
+              />
             </Card>
           ))
         )}
