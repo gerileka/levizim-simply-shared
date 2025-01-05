@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -24,7 +24,15 @@ export const ChatInterface = ({
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      const scrollArea = scrollAreaRef.current;
+      scrollArea.scrollTop = scrollArea.scrollHeight;
+    }
+  };
 
   useEffect(() => {
     fetchMessages();
@@ -57,6 +65,7 @@ export const ChatInterface = ({
           };
 
           setMessages(prevMessages => [...prevMessages, newMessage]);
+          setTimeout(scrollToBottom, 100);
         }
       )
       .subscribe();
@@ -65,6 +74,10 @@ export const ChatInterface = ({
       supabase.removeChannel(channel);
     };
   }, [bookingId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const fetchMessages = async () => {
     try {
@@ -85,6 +98,7 @@ export const ChatInterface = ({
 
       if (error) throw error;
       setMessages(data || []);
+      setTimeout(scrollToBottom, 100);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -130,7 +144,7 @@ export const ChatInterface = ({
 
   return (
     <div className="flex flex-col h-[400px] bg-stripe-secondary rounded-lg border border-stripe-muted">
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message) => (
             <ChatMessage
