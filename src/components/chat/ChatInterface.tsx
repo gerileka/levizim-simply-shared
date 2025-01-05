@@ -41,18 +41,18 @@ export const ChatInterface = ({
     
     // Set up real-time subscription
     const channel = supabase
-      .channel('messages_channel')
+      .channel(`messages_${bookingId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'messages',
           filter: `booking_id=eq.${bookingId}`
         },
-        () => {
-          console.log('New message received, refreshing...');
-          fetchMessages();
+        (payload) => {
+          const newMessage = payload.new as Message;
+          setMessages(prevMessages => [...prevMessages, newMessage]);
         }
       )
       .subscribe();
