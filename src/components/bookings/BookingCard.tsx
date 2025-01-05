@@ -16,7 +16,7 @@ interface BookingCardProps {
       price: number;
       seats: number;
       driver: {
-        id: string;  // Added this line to include the driver's id
+        id: string;
         name: string;
         rating: number;
         avatar_url: string;
