@@ -51,7 +51,6 @@ export const SlidingMenu = () => {
     { label: "Logout", icon: LogOut, path: null, onClick: handleLogout },
   ];
 
-  // Add overlay when menu is open
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -69,9 +68,9 @@ export const SlidingMenu = () => {
         <Button 
           variant="outline" 
           size="icon" 
-          className="fixed top-4 right-4 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all"
+          className="fixed top-6 right-4 md:top-4 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all bg-stripe-bg border-stripe-accent hover:bg-stripe-secondary"
         >
-          <List className="h-6 w-6" />
+          <List className="h-6 w-6 text-stripe-accent" />
         </Button>
       </SheetTrigger>
       <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />

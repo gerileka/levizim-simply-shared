@@ -20,7 +20,7 @@ export const Hero = ({ onSearchResults }: HeroProps) => {
   };
 
   return (
-    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-16 md:pt-0">
       <div className="absolute inset-0 bg-gradient-to-b from-stripe-bg to-stripe-muted -z-10" />
       <div className="container px-4 md:px-6">
         <div className="grid gap-6 items-center">
@@ -50,14 +50,14 @@ export const Hero = ({ onSearchResults }: HeroProps) => {
                 <TabsList className="grid w-full grid-cols-2 mb-8 bg-stripe-secondary">
                   <TabsTrigger 
                     value="search" 
-                    className="flex items-center gap-2 data-[state=active]:bg-stripe-accent"
+                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-3"
                   >
                     <Search className="w-4 h-4" />
                     Find a Ride
                   </TabsTrigger>
                   <TabsTrigger 
                     value="offer" 
-                    className="flex items-center gap-2 data-[state=active]:bg-stripe-accent"
+                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-3"
                   >
                     <Car className="w-4 h-4" />
                     Offer a Ride
