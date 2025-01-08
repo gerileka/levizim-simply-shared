@@ -68,9 +68,9 @@ export const SlidingMenu = () => {
         <Button 
           variant="outline" 
           size="icon" 
-          className="fixed top-6 right-4 md:top-4 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all bg-stripe-bg border-stripe-accent hover:bg-stripe-secondary"
+          className="fixed top-8 right-4 md:top-6 z-50 h-12 w-12 rounded-full shadow-lg hover:shadow-xl transition-all bg-[#403E43] border-stripe-accent hover:bg-[#221F26]"
         >
-          <List className="h-6 w-6 text-stripe-accent" />
+          <List className="h-6 w-6 text-white" />
         </Button>
       </SheetTrigger>
       <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
