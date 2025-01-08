@@ -55,8 +55,34 @@
   * {
     @apply border-border;
   }
+  
+  html {
+    @apply antialiased;
+    font-size: 16px;
+  }
+  
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans min-h-screen;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Improve touch targets on mobile */
+  button, 
+  [type='button'],
+  [type='reset'],
+  [type='submit'] {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Improve input experience on mobile */
+  input,
+  select,
+  textarea {
+    @apply min-h-[48px] text-base;
+    font-size: 16px !important; /* Prevent zoom on focus in iOS */
   }
 }
 
@@ -67,6 +93,19 @@
   
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Touch-friendly hover states */
+  @media (hover: hover) {
+    .hover-effect {
+      @apply transition-all duration-200;
+    }
+  }
+
+  /* Improved mobile scrolling */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }
 

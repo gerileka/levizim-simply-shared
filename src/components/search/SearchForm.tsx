@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calendar as CalendarIcon } from "lucide-react";
 
 interface SearchFormProps {
   from: string;
@@ -25,49 +25,52 @@ export const SearchForm = ({
   isLoading,
 }: SearchFormProps) => {
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6 w-full max-w-4xl mx-auto px-4">
       <div className="grid gap-6 md:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="from" className="text-stripe-text">From</Label>
+          <Label htmlFor="from" className="text-stripe-text text-base">From</Label>
           <Input
             id="from"
             placeholder="Departure city"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
             required
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
+            className="h-12 text-base bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary focus:ring-stripe-accent focus:border-stripe-accent"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="to" className="text-stripe-text">To</Label>
+          <Label htmlFor="to" className="text-stripe-text text-base">To</Label>
           <Input
             id="to"
             placeholder="Destination city"
             value={to}
             onChange={(e) => setTo(e.target.value)}
             required
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
+            className="h-12 text-base bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary focus:ring-stripe-accent focus:border-stripe-accent"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="date" className="text-stripe-text">Date (Optional)</Label>
-          <Input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary"
-          />
+          <Label htmlFor="date" className="text-stripe-text text-base">Date</Label>
+          <div className="relative">
+            <Input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="h-12 text-base bg-stripe-bg text-stripe-text placeholder:text-stripe-text/50 border-stripe-secondary focus:ring-stripe-accent focus:border-stripe-accent pl-12"
+            />
+            <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-stripe-accent pointer-events-none" />
+          </div>
         </div>
       </div>
       <Button
         type="submit"
-        className="w-full bg-stripe-accent hover:bg-stripe-accent/90"
+        className="w-full md:w-auto min-w-[200px] h-12 text-base bg-stripe-accent hover:bg-stripe-accent/90 text-white font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-70"
         disabled={isLoading}
       >
         {isLoading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             Searching...
           </>
         ) : (
