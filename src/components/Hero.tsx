@@ -47,17 +47,17 @@ export const Hero = ({ onSearchResults }: HeroProps) => {
               className="max-w-[800px] mx-auto w-full mt-8"
             >
               <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-8 bg-stripe-secondary">
+                <TabsList className="grid w-full grid-cols-2 mb-8 bg-stripe-secondary h-auto p-0 rounded-lg overflow-hidden">
                   <TabsTrigger 
                     value="search" 
-                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-4 text-base"
+                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-4 text-base w-full h-full"
                   >
                     <Search className="w-5 h-5" />
                     Find a Ride
                   </TabsTrigger>
                   <TabsTrigger 
                     value="offer" 
-                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-4 text-base"
+                    className="flex items-center justify-center gap-2 data-[state=active]:bg-stripe-accent py-4 text-base w-full h-full"
                   >
                     <Car className="w-5 h-5" />
                     Offer a Ride
