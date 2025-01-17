@@ -21,6 +21,8 @@ interface Booking {
     };
   };
   status: string;
+  driver_accepted: boolean;
+  rider_accepted: boolean;
 }
 
 export const MyBookings = () => {
@@ -90,6 +92,8 @@ export const MyBookings = () => {
         .select(`
           id,
           status,
+          driver_accepted,
+          rider_accepted,
           ride:rides (
             from_location,
             to_location,
