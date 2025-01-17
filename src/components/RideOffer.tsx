@@ -4,7 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { OfferForm } from "./offer/OfferForm";
 
-export const RideOffer = () => {
+interface RideOfferProps {
+  onRideCreated?: () => void;
+}
+
+export const RideOffer = ({ onRideCreated }: RideOfferProps) => {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("");
@@ -56,7 +60,11 @@ export const RideOffer = () => {
         description: "Your ride has been posted",
       });
 
-      navigate("/offers"); // Redirect to offers page after successful creation
+      if (onRideCreated) {
+        onRideCreated();
+      }
+
+      navigate("/offers");
 
       // Reset form
       setFrom("");

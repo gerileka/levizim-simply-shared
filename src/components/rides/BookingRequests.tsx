@@ -26,15 +26,15 @@ const getStatusBadge = (status: string, driver_accepted: boolean, rider_accepted
   }
   
   if (status === 'confirmed') {
-    return <Badge variant="success">Confirmed</Badge>;
+    return <Badge variant="default" className="bg-green-500">Confirmed</Badge>;
   }
   
   if (driver_accepted && !rider_accepted) {
-    return <Badge variant="warning">Awaiting Rider</Badge>;
+    return <Badge variant="secondary" className="bg-yellow-500">Awaiting Rider</Badge>;
   }
   
   if (!driver_accepted && rider_accepted) {
-    return <Badge variant="warning">Awaiting Driver</Badge>;
+    return <Badge variant="secondary" className="bg-yellow-500">Awaiting Driver</Badge>;
   }
   
   return <Badge variant="secondary">Pending</Badge>;
@@ -87,9 +87,8 @@ export const BookingRequests = ({
                     </Button>
                     <Button
                       onClick={() => onStatusChange(booking.id, 'rejected')}
-                      variant="outline"
+                      variant="destructive"
                       size="sm"
-                      className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
                     >
                       Reject
                     </Button>
