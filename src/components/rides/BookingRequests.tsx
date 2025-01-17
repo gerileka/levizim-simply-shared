@@ -25,7 +25,7 @@ const getStatusBadge = (status: string, driver_accepted: boolean, rider_accepted
     return <Badge variant="destructive">Rejected</Badge>;
   }
   
-  if (status === 'confirmed') {
+  if (driver_accepted && rider_accepted) {
     return <Badge variant="default" className="bg-green-500">Confirmed</Badge>;
   }
   
