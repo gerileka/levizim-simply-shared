@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { RideOffer } from "./RideOffer";
 import { RideCard } from "./rides/RideCard";
 import { BookingRequests } from "./rides/BookingRequests";
 
@@ -82,7 +81,6 @@ export const UserRides = () => {
 
   return (
     <div className="space-y-6">
-      <RideOffer onRideCreated={fetchRides} />
       <div className="grid gap-4">
         {rides.map((ride) => (
           <div key={ride.id} className="space-y-4">

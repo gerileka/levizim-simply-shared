@@ -1,6 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { Calendar, MapPin, User } from "lucide-react";
+import { Calendar, MapPin, User, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface RideCardProps {
   ride: {
@@ -23,6 +26,35 @@ interface RideCardProps {
 }
 
 export const RideCard = ({ ride, onClick, selected }: RideCardProps) => {
+  const { toast } = useToast();
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering onClick of the card
+    try {
+      const { error } = await supabase
+        .from('rides')
+        .delete()
+        .eq('id', ride.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Ride deleted",
+        description: "Your ride has been deleted successfully",
+      });
+
+      // Refresh the page to show updated list
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting ride:', error);
+      toast({
+        title: "Error deleting ride",
+        description: "There was an error deleting your ride",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card 
       className={cn(
@@ -50,11 +82,23 @@ export const RideCard = ({ ride, onClick, selected }: RideCardProps) => {
               )}
             </div>
           </div>
-          {ride.bookings && (
-            <div className="text-sm text-stripe-text/60">
-              {ride.bookings.length} booking{ride.bookings.length !== 1 ? 's' : ''}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {(!ride.bookings || ride.bookings.length === 0) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDelete}
+                className="text-red-500 hover:text-red-600 hover:bg-red-100"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            {ride.bookings && (
+              <div className="text-sm text-stripe-text/60">
+                {ride.bookings.length} booking{ride.bookings.length !== 1 ? 's' : ''}
+              </div>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
           <div className="flex items-center text-stripe-text/80">
