@@ -1,6 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInterface } from "../chat/ChatInterface";
+import { Badge } from "@/components/ui/badge";
 
 interface BookingRequestsProps {
   bookings?: {
@@ -11,11 +12,33 @@ interface BookingRequestsProps {
       name: string;
       avatar_url: string | null;
     };
+    driver_accepted: boolean;
+    rider_accepted: boolean;
   }[];
   onStatusChange: (bookingId: string, status: 'accepted' | 'rejected') => void;
   selectedBooking: string | null;
   setSelectedBooking: (id: string | null) => void;
 }
+
+const getStatusBadge = (status: string, driver_accepted: boolean, rider_accepted: boolean) => {
+  if (status === 'rejected') {
+    return <Badge variant="destructive">Rejected</Badge>;
+  }
+  
+  if (status === 'confirmed') {
+    return <Badge variant="success">Confirmed</Badge>;
+  }
+  
+  if (driver_accepted && !rider_accepted) {
+    return <Badge variant="warning">Awaiting Rider</Badge>;
+  }
+  
+  if (!driver_accepted && rider_accepted) {
+    return <Badge variant="warning">Awaiting Driver</Badge>;
+  }
+  
+  return <Badge variant="secondary">Pending</Badge>;
+};
 
 export const BookingRequests = ({ 
   bookings, 
@@ -38,7 +61,10 @@ export const BookingRequests = ({
                   alt={booking.user.name}
                   className="w-8 h-8 rounded-full"
                 />
-                <span className="text-sm text-stripe-text">{booking.user.name}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm text-stripe-text">{booking.user.name}</span>
+                  {getStatusBadge(booking.status, booking.driver_accepted, booking.rider_accepted)}
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Button
@@ -49,29 +75,26 @@ export const BookingRequests = ({
                 >
                   <MessageCircle className="h-4 w-4" />
                 </Button>
-                {booking.status === 'pending' && (
+                {booking.status === 'pending' && !booking.driver_accepted && (
                   <div className="flex space-x-2">
                     <Button
                       onClick={() => onStatusChange(booking.id, 'accepted')}
-                      className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                      variant="outline"
+                      size="sm"
+                      className="text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
                     >
                       Accept
                     </Button>
                     <Button
                       onClick={() => onStatusChange(booking.id, 'rejected')}
-                      className="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
                     >
                       Reject
                     </Button>
                   </div>
                 )}
-                <span className={`text-xs px-2 py-1 rounded ${
-                  booking.status === 'accepted' ? 'bg-green-100 text-green-800' : 
-                  booking.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                </span>
               </div>
             </div>
             {selectedBooking === booking.id && (
