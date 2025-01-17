@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,11 +10,11 @@ interface RideCardProps {
     date: string;
     price: number;
     seats: number;
-    driver: {
+    driver?: {
       id: string;
       name: string;
       rating: number;
-      avatar_url: string;
+      avatar_url: string | null;
     };
     bookings?: any[];
   };
@@ -36,17 +35,19 @@ export const RideCard = ({ ride, onClick, selected }: RideCardProps) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <img
-              src={ride.driver.avatar_url || '/placeholder.svg'}
-              alt={ride.driver.name}
-              className="w-10 h-10 rounded-full"
+              src={ride.driver?.avatar_url || '/placeholder.svg'}
+              alt={ride.driver?.name || 'Driver'}
+              className="w-10 h-10 rounded-full object-cover bg-gray-100"
             />
             <div>
               <h3 className="font-medium text-stripe-text">
-                {ride.driver.name}
+                {ride.driver?.name || 'Loading...'}
               </h3>
-              <div className="text-sm text-stripe-text/60">
-                ★ {ride.driver.rating.toFixed(1)}
-              </div>
+              {ride.driver?.rating && (
+                <div className="text-sm text-stripe-text/60">
+                  ★ {ride.driver.rating.toFixed(1)}
+                </div>
+              )}
             </div>
           </div>
           {ride.bookings && (
