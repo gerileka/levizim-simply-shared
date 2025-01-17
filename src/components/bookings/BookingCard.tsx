@@ -33,16 +33,19 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
   const { toast } = useToast();
 
   const getStatusDisplay = () => {
-    switch (booking.status) {
-      case 'pending':
-        return { text: 'Pending', color: 'text-yellow-500' };
-      case 'confirmed':
-        return { text: 'Confirmed', color: 'text-green-500' };
-      case 'rejected':
-        return { text: 'Rejected', color: 'text-red-500' };
-      default:
-        return { text: booking.status, color: 'text-gray-500' };
+    if (booking.status === 'rejected') {
+      return { text: 'Rejected', color: 'text-red-500' };
     }
+    if (booking.driver_accepted && booking.rider_accepted) {
+      return { text: 'Confirmed', color: 'text-green-500' };
+    }
+    if (booking.driver_accepted) {
+      return { text: 'Awaiting your confirmation', color: 'text-yellow-500' };
+    }
+    if (booking.rider_accepted) {
+      return { text: 'Awaiting driver confirmation', color: 'text-yellow-500' };
+    }
+    return { text: 'Pending', color: 'text-yellow-500' };
   };
 
   const handleAccept = async () => {
