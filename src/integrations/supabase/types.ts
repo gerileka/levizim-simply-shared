@@ -12,22 +12,28 @@ export type Database = {
       bookings: {
         Row: {
           created_at: string
+          driver_accepted: boolean | null
           id: string
           ride_id: string
+          rider_accepted: boolean | null
           status: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          driver_accepted?: boolean | null
           id?: string
           ride_id: string
+          rider_accepted?: boolean | null
           status?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          driver_accepted?: boolean | null
           id?: string
           ride_id?: string
+          rider_accepted?: boolean | null
           status?: string
           user_id?: string
         }

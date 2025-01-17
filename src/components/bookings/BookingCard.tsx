@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, X, MessageCircle } from "lucide-react";
-import { ChatInterface } from "../chat/ChatInterface";
+import { Calendar, MapPin, MessageCircle, Check, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -23,38 +22,58 @@ interface BookingCardProps {
       };
     };
     status: string;
+    driver_accepted: boolean;
+    rider_accepted: boolean;
   };
   onCancel: (id: string) => void;
 }
 
 export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
-  const [showChat, setShowChat] = useState(false);
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentStatus, setCurrentStatus] = useState(booking.status);
 
-  const handleStatusChange = async (newStatus: 'accepted' | 'rejected') => {
+  const getStatusDisplay = () => {
+    switch (booking.status) {
+      case 'pending':
+        return { text: 'Pending', color: 'text-yellow-500' };
+      case 'confirmed':
+        return { text: 'Confirmed', color: 'text-green-500' };
+      case 'rejected':
+        return { text: 'Rejected', color: 'text-red-500' };
+      default:
+        return { text: booking.status, color: 'text-gray-500' };
+    }
+  };
+
+  const handleAccept = async () => {
     try {
       const { error } = await supabase
         .from('bookings')
-        .update({ status: newStatus })
+        .update({ 
+          rider_accepted: true,
+          status: booking.driver_accepted ? 'confirmed' : 'pending'
+        })
         .eq('id', booking.id);
 
       if (error) throw error;
 
-      setCurrentStatus(newStatus);
       toast({
-        title: `Booking ${newStatus}`,
-        description: `The booking has been ${newStatus}`,
+        title: "Booking accepted",
+        description: booking.driver_accepted 
+          ? "The booking is now confirmed!" 
+          : "Waiting for driver confirmation",
       });
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error('Error accepting booking:', error);
       toast({
-        title: "Error updating booking status",
+        title: "Error accepting booking",
         description: "Please try again later",
         variant: "destructive",
       });
     }
   };
+
+  const status = getStatusDisplay();
 
   return (
     <Card className="bg-stripe-secondary border-stripe-muted">
@@ -70,8 +89,8 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
               <h3 className="font-medium text-stripe-text">
                 {booking.ride.driver.name}
               </h3>
-              <div className="text-sm text-stripe-text/60">
-                ★ {booking.ride.driver.rating.toFixed(1)}
+              <div className={`text-sm ${status.color}`}>
+                {status.text}
               </div>
             </div>
           </div>
@@ -79,19 +98,31 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowChat(!showChat)}
+              onClick={() => navigate(`/chat/${booking.id}`)}
               className="text-stripe-text/60 hover:text-stripe-text"
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onCancel(booking.id)}
-              className="text-stripe-text/60 hover:text-stripe-text"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            {booking.status === 'pending' && !booking.rider_accepted && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleAccept}
+                  className="text-green-500 hover:text-green-600"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onCancel(booking.id)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
         <div className="space-y-2">
@@ -107,25 +138,10 @@ export const BookingCard = ({ booking, onCancel }: BookingCardProps) => {
             <Calendar className="h-4 w-4 mr-2 text-stripe-accent" />
             {new Date(booking.ride.date).toLocaleDateString()}
           </div>
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-stripe-text/60">Status: {currentStatus}</span>
-            <span className="text-lg font-semibold text-stripe-accent">
-              ${booking.ride.price}
-            </span>
+          <div className="mt-4 text-lg font-semibold text-stripe-accent">
+            ${booking.ride.price}
           </div>
         </div>
-        
-        {showChat && (
-          <div className="mt-4">
-            <ChatInterface
-              bookingId={booking.id}
-              currentUserId={booking.ride.driver.id}
-              onStatusChange={handleStatusChange}
-              isDriver={true}
-              status={currentStatus}
-            />
-          </div>
-        )}
       </div>
     </Card>
   );

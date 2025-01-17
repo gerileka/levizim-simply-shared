@@ -10,6 +10,7 @@ import AuthPage from "./pages/Auth";
 import Profile from "./pages/Profile";
 import BookingsPage from "./pages/Bookings";
 import OffersPage from "./pages/Offers";
+import ChatPage from "./pages/Chat";
 import { supabase } from "./integrations/supabase/client";
 import { useToast } from "./hooks/use-toast";
 
@@ -112,6 +113,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <OffersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:bookingId"
+              element={
+                <ProtectedRoute>
+                  <ChatPage />
                 </ProtectedRoute>
               }
             />

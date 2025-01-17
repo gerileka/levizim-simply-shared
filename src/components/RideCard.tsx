@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, User } from "lucide-react";
+import { Calendar, MapPin, User, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,6 @@ export const RideCard = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Check if user profile is complete
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("name, surname")
@@ -61,49 +60,28 @@ export const RideCard = ({
         return;
       }
 
-      // Start a transaction by first checking and updating the ride
-      const { data: ride, error: rideError } = await supabase
-        .from('rides')
-        .select('seats')
-        .eq('id', id)
-        .single();
-
-      if (rideError) throw rideError;
-
-      if (!ride || ride.seats <= 0) {
-        toast({
-          title: "Ride unavailable",
-          description: "This ride is fully booked",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Create the booking first
-      const { error: bookingError } = await supabase
+      const { data: booking, error: bookingError } = await supabase
         .from('bookings')
         .insert([
           {
             ride_id: id,
             user_id: user.id,
-            status: 'confirmed'
+            status: 'pending',
+            driver_accepted: false,
+            rider_accepted: true
           }
-        ]);
+        ])
+        .select()
+        .single();
 
       if (bookingError) throw bookingError;
 
-      // Update the ride to decrease available seats
-      const { error: updateError } = await supabase
-        .from('rides')
-        .update({ seats: seats - 1 })
-        .eq('id', id);
-
-      if (updateError) throw updateError;
-
       toast({
-        title: "Ride booked successfully",
-        description: "Your ride has been booked",
+        title: "Booking request sent",
+        description: "The driver will review your request",
       });
+
+      navigate(`/chat/${booking.id}`);
 
       if (onBook) onBook();
     } catch (error) {
